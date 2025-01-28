@@ -82,10 +82,51 @@ export function activate(context: vscode.ExtensionContext) {
 		  }
 		)
 	  );
+
+	// refreshs: 
+	// file save event: trigger tree view refresh
+	// context.subscriptions.push(
+	// 	vscode.workspace.onDidSaveTextDocument((event) => {
+	// 		treeDataProvider.refresh();
+	// 	})
+	// );
+
+	// // file delte event: trigger tree view refresh
+	// context.subscriptions.push(
+	// 	vscode.workspace.onDidDeleteFiles((event) => {
+	// 	treeDataProvider.refresh();
+	// 	})
+	// );
+
+	// Use a FileSystemWatcher to handle file creation
+	const watcher = vscode.workspace.createFileSystemWatcher("**/*");
+
+	// Trigger TreeView refresh on file creation
+	watcher.onDidCreate((uri) => {
+		console.log(`File created: ${uri.fsPath}`);
+		treeDataProvider.refresh();
+	});
+
+	// Optionally handle file deletions and changes
+	watcher.onDidDelete((uri) => {
+		console.log(`File deleted: ${uri.fsPath}`);
+		treeDataProvider.refresh();
+	});
+
+	watcher.onDidChange((uri) => {
+		console.log(`File changed: ${uri.fsPath}`);
+		treeDataProvider.refresh();
+	});
+	context.subscriptions.push(watcher);
+
+
+
 }
 
 // This method is called when your extension is deactivated
-export function deactivate() { }
+export function deactivate() { 
+
+}
 
 
 // Test Block

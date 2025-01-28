@@ -1,5 +1,5 @@
 
-describe.only('Main describe only', function () {
+describe('Main describe only', function () {
 
 	describe.skip('Nested describe skip', () => {
 		it.only('individual test only ', async function () {
