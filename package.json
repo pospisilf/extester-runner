@@ -2,7 +2,7 @@
   "name": "extester-runner",
   "displayName": "extester-runner",
   "description": "to be defined",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "engines": {
     "vscode": "^1.96.0"
   },
@@ -54,10 +54,10 @@
     },
     "commands": [
       {
-        "command": "extester-runner.runAll",
-        "title": "Extester Runner: Run all tests",
-        "icon": "$(run-all)",
-        "tooltip": "Run all tests"
+        "command": "extester-runner.collapseAll",
+        "title": "Collapse All",
+        "icon": "$(collapse-all)",
+        "tooltip": "Collapse all items in tree"
       },
       {
         "command": "extester-runner.refreshTests",
@@ -66,10 +66,20 @@
         "tooltip": "Refresh list of tests"
       },
       {
-        "command": "extester-runner.collapseAll",
-        "title": "Collapse All",
-        "icon": "$(collapse-all)",
-        "tooltip": "TBD"
+        "command": "extester-runner.runFile",
+        "icon": "$(play)",
+        "title": "Run file"
+      },
+      {
+        "command": "extester-runner.runAll",
+        "title": "Extester Runner: Run all tests",
+        "icon": "$(run-all)",
+        "tooltip": "Run all tests"
+      },
+      {
+        "command": "extester-runner.runFolder",
+        "icon": "$(run-below)",
+        "title": "Run folder"
       },
       {
         "command": "extester-runner.searchFiles",
@@ -98,14 +108,14 @@
     "menus": {
       "view/title": [
         {
-          "command": "extester-runner.runAll",
-          "when": "view == extesterView",
-          "group": "navigation@2"
-        },
-        {
           "command": "extester-runner.refreshTests",
           "when": "view == extesterView",
           "group": "navigation@1"
+        },
+        {
+          "command": "extester-runner.runAll",
+          "when": "view == extesterView",
+          "group": "navigation@2"
         },
         {
           "command": "extester-runner.collapseAll",
@@ -116,6 +126,18 @@
           "command": "extester-runner.searchFiles",
           "when": "view == extesterView",
           "group": "navigation@4"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "extester-runner.runFolder",
+          "when": "viewItem == folder",
+          "group": "inline"
+        },
+        {
+          "command": "extester-runner.runFile",
+          "when": "viewItem == file",
+          "group": "inline"
         }
       ]
     }

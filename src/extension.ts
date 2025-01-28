@@ -20,6 +20,18 @@ export function activate(context: vscode.ExtensionContext) {
 		})
 	);
 
+	context.subscriptions.push(
+		vscode.commands.registerCommand('extester-runner.runFolder', async () => {
+			vscode.window.showInformationMessage('extester-runner.runFolder');
+		})
+	);
+
+	context.subscriptions.push(
+		vscode.commands.registerCommand('extester-runner.runFile', async () => {
+			vscode.window.showInformationMessage('extester-runner.runFile');
+		})
+	);
+
 	// refresh tests
 	context.subscriptions.push(
 		vscode.commands.registerCommand('extester-runner.refreshTests', async () => {
