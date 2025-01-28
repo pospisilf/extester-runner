@@ -2,7 +2,7 @@
   "name": "extester-runner",
   "displayName": "extester-runner",
   "description": "to be defined",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "engines": {
     "vscode": "^1.96.0"
   },
@@ -14,14 +14,28 @@
   "contributes": {
     "commands": [
       {
-        "command": "extester-runner.helloWorld",
-        "title": "Hello World"
-      },
-      {
         "command": "extester-runner.runAll",
         "title": "Extester Runner: Run all tests",
         "icon": "$(run-all)",
         "tooltip": "Run all tests"
+      },
+      {
+        "command": "extester-runner.refreshTests",
+        "title": "Extester Runner: Refresh tests",
+        "icon": "$(refresh)",
+        "tooltip": "Refresh list of tests"
+      },
+      {
+        "command": "extester-runner.collapseAll",
+        "title": "Collapse All",
+        "icon": "$(collapse-all)",
+        "tooltip": "TBD"
+      },
+      {
+        "command": "extester-runner.searchFiles",
+        "title": "Search in ExTester Tree",
+        "icon": "$(search)",
+        "tooltip": "Search for files or folders in the tree view"
       }
     ],
     "viewsContainers": {
@@ -46,7 +60,22 @@
         {
           "command": "extester-runner.runAll",
           "when": "view == extesterView",
-          "group": "navigation"
+          "group": "navigation@2"
+        },
+        {
+          "command": "extester-runner.refreshTests",
+          "when": "view == extesterView",
+          "group": "navigation@1"
+        },
+        {
+          "command": "extester-runner.collapseAll",
+          "when": "view == extesterView",
+          "group": "navigation@3"
+        },
+        {
+          "command": "extester-runner.searchFiles",
+          "when": "view == extesterView",
+          "group": "navigation@4"
         }
       ]
     }
