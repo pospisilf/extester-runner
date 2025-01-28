@@ -2,7 +2,7 @@
   "name": "extester-runner",
   "displayName": "extester-runner",
   "description": "to be defined",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "engines": {
     "vscode": "^1.96.0"
   },
@@ -32,6 +32,26 @@
       }
     }
   ],
+  "configuration": {
+      "title": "ExTester Runner",
+      "properties": {
+        "extesterRunner.testFileGlob": {
+          "type": "string",
+          "default": "**/*.test.ts",
+          "description": "Glob pattern to find test files in the workspace. Default is '**/*.test.ts'."
+        },
+        "extesterRunner.excludeGlob": {
+          "type": "string",
+          "default": "**/node_modules/**",
+          "description": "Glob pattern to exclude paths from test file search. Default is '**/node_modules/**'."
+        },
+        "extesterRunner.outFolder": {
+          "type": "string",
+          "default": "out",
+          "description": "Out folder. Default is 'out'."
+        }
+      }
+    },
     "commands": [
       {
         "command": "extester-runner.runAll",
