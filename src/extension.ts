@@ -36,6 +36,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('extester-runner.refreshTests', async () => {
 			vscode.window.showInformationMessage('extester-runner.refreshTests');
+			treeDataProvider.refresh();
 		})
 	);
 
