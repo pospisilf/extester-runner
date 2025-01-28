@@ -523,15 +523,64 @@ export async function parseTestFile(uri: vscode.Uri): Promise<TestBlock[]> {
 	return testStructure;
   }
 
-function runAllTests() {
-	throw new Error('Function not implemented.');
-}
-
-function runFolder(arg0: string) {
-	throw new Error('Function not implemented.');
-}
-
-function runFile(arg0: string) {
-	throw new Error('Function not implemented.');
-}
+  async function runAllTests() {
+	const configuration = vscode.workspace.getConfiguration('extesterRunner');
+	const outputFolder = configuration.get<string>('outFolder') || 'out';
+	const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '';
+	const outputPath = `${workspaceFolder}/${outputFolder}/**/*.test.js`;
   
+	vscode.window.showInformationMessage('Running all tests...');
+  
+	// find an existing terminal or create a new one
+	let terminal = vscode.window.terminals.find(t => t.name === 'UI Test Runner');
+	if (!terminal) {
+	  terminal = vscode.window.createTerminal({
+		name: 'UI Test Runner', // name of the terminal
+	  });
+	}
+  
+	// focus the terminal and send the command with the modified path
+	terminal.show();
+	terminal.sendText(`npx extest setup-and-run ${outputPath}`);
+  }
+  
+  
+  async function runFolder(folder: string) {
+	const configuration = vscode.workspace.getConfiguration('extesterRunner');
+	const outputFolder = configuration.get<string>('outFolder') || 'out';
+	const outputPath = folder.replace(/src\//, `${outputFolder}/`) + '/**/*.test.js';
+  
+	vscode.window.showInformationMessage(`Running ${outputFolder}`);
+  
+	let terminal = vscode.window.terminals.find(t => t.name === 'UI Test Runner');
+	if (!terminal) {
+	  terminal = vscode.window.createTerminal({
+		name: 'UI Test Runner', // name of the terminal
+	  });
+	}
+  
+	terminal.show();
+	terminal.sendText(`npx extest setup-and-run ${outputPath}`);
+  }
+  
+  async function runFile(file: string) {
+	const configuration = vscode.workspace.getConfiguration('extesterRunner');
+	const outputFolder = configuration.get<string>('outFolder') || 'out/**.*.js';
+  
+	// transform the input path to match the output folder and file structure
+	const outputPath = file
+	  .replace(/src\//, `${outputFolder}/`) // replace 'src/' with the output folder
+	  .replace(/\.ts$/, '.js'); // replace '.ts' with '.js'
+  
+	vscode.window.showInformationMessage(`Running ${outputPath}`);
+  
+	let terminal = vscode.window.terminals.find(t => t.name === 'UI Test Runner');
+	if (!terminal) {
+	  terminal = vscode.window.createTerminal({
+		name: 'UI Test Runner', // name of the terminal
+	  });
+	}
+  
+	terminal.show();
+	terminal.sendText(`npx extest setup-and-run ${outputPath}`);
+  }
