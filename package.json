@@ -12,6 +12,26 @@
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
+    "colors": [
+    {
+      "id": "extesterrunner.only",
+      "description": "The color used for the 'only' modifier.",
+      "defaults": {
+        "light": "#42A5F5",
+        "dark": "#64B5F6",
+        "highContrast": "#00BFFF"
+      }
+    },
+    {
+      "id": "extesterrunner.skip",
+      "description": "The color used for the 'skip' modifier.",
+      "defaults": {
+        "light": "#FFA726",
+        "dark": "#FFB74D",
+        "highContrast": "#FF8C00"
+      }
+    }
+  ],
     "commands": [
       {
         "command": "extester-runner.runAll",
