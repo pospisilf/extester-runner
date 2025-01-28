@@ -16,19 +16,22 @@ export function activate(context: vscode.ExtensionContext) {
 	// run all tests
 	context.subscriptions.push(
 		vscode.commands.registerCommand('extester-runner.runAll', async () => {
-			vscode.window.showInformationMessage('extester-runner.runAll');
+			vscode.window.showInformationMessage('Running all tests.');
+			await runAllTests();
 		})
 	);
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand('extester-runner.runFolder', async () => {
-			vscode.window.showInformationMessage('extester-runner.runFolder');
+		vscode.commands.registerCommand('extester-runner.runFolder', async (item: TreeItem) => {
+			vscode.window.showInformationMessage(`Running tests in folder: ${item.folderPath}`);
+			await runFolder(item.folderPath as string);
 		})
 	);
 
 	context.subscriptions.push(
-		vscode.commands.registerCommand('extester-runner.runFile', async () => {
-			vscode.window.showInformationMessage('extester-runner.runFile');
+		vscode.commands.registerCommand('extester-runner.runFile', async (item: TreeItem) => {
+			vscode.window.showInformationMessage(`Running tests in file: ${item.filePath}`);
+			await runFile(item.filePath as string);
 		})
 	);
 
@@ -478,4 +481,16 @@ export async function parseTestFile(uri: vscode.Uri): Promise<TestBlock[]> {
   
 	return testStructure;
   }
+
+function runAllTests() {
+	throw new Error('Function not implemented.');
+}
+
+function runFolder(arg0: string) {
+	throw new Error('Function not implemented.');
+}
+
+function runFile(arg0: string) {
+	throw new Error('Function not implemented.');
+}
   
