@@ -7,13 +7,12 @@ import * as t from '@babel/types';
 
 export function activate(context: vscode.ExtensionContext) {
 
+	// register view
 	const treeDataProvider = new ExtesterTreeProvider();
 	vscode.window.registerTreeDataProvider('extesterView', treeDataProvider);
 
-
-
-	// commands
-	// run all tests
+	// run commands
+	// all files
 	context.subscriptions.push(
 		vscode.commands.registerCommand('extester-runner.runAll', async () => {
 			vscode.window.showInformationMessage('Running all tests.');
@@ -21,24 +20,27 @@ export function activate(context: vscode.ExtensionContext) {
 		})
 	);
 
+	// specific folder
 	context.subscriptions.push(
 		vscode.commands.registerCommand('extester-runner.runFolder', async (item: TreeItem) => {
-			vscode.window.showInformationMessage(`Running tests in folder: ${item.folderPath}`);
+			vscode.window.showInformationMessage(`Running test files in folder: ${item.folderPath}.`);
 			await runFolder(item.folderPath as string);
 		})
 	);
 
+	// specific file
 	context.subscriptions.push(
 		vscode.commands.registerCommand('extester-runner.runFile', async (item: TreeItem) => {
-			vscode.window.showInformationMessage(`Running tests in file: ${item.filePath}`);
+			vscode.window.showInformationMessage(`Running tests in file: ${item.filePath}.`);
 			await runFile(item.filePath as string);
 		})
 	);
 
-	// refresh tests
+	// tree view commands
+	// refresh
 	context.subscriptions.push(
 		vscode.commands.registerCommand('extester-runner.refreshTests', async () => {
-			vscode.window.showInformationMessage('extester-runner.refreshTests');
+			vscode.window.showInformationMessage('Refreshing files.'); // maybe not neccessary?
 			treeDataProvider.refresh();
 		})
 	);
@@ -46,18 +48,23 @@ export function activate(context: vscode.ExtensionContext) {
 	// collapse all
 	context.subscriptions.push(
 		vscode.commands.registerCommand('extester-runner.collapseAll', async () => {
-			vscode.window.showInformationMessage('extester-runner.collapseAll');
+			vscode.commands.executeCommand('workbench.actions.treeView.extesterView.collapseAll');
 		})
 	);
 
 	// search files
 	context.subscriptions.push(
 		vscode.commands.registerCommand('extester-runner.searchFiles', async () => {
-			vscode.window.showInformationMessage('extester-runner.searchFiles');
+		  const searchQuery = await vscode.window.showInputBox({
+			placeHolder: 'Search for a file or folder...',
+			prompt: 'Type to search files or folders in the tree view',
+		  });
+	
+		  treeDataProvider.setSearchQuery(searchQuery); // Pass the query to the TreeDataProvider
 		})
-	);
+	  );
 
-	// commands
+	// utils
 	// open specific file in editor on position if defined
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
@@ -83,31 +90,14 @@ export function activate(context: vscode.ExtensionContext) {
 		)
 	  );
 
-	// refreshs: 
-	// file save event: trigger tree view refresh
-	// context.subscriptions.push(
-	// 	vscode.workspace.onDidSaveTextDocument((event) => {
-	// 		treeDataProvider.refresh();
-	// 	})
-	// );
-
-	// // file delte event: trigger tree view refresh
-	// context.subscriptions.push(
-	// 	vscode.workspace.onDidDeleteFiles((event) => {
-	// 	treeDataProvider.refresh();
-	// 	})
-	// );
-
-	// Use a FileSystemWatcher to handle file creation
+	// refresh on create, delete and change
 	const watcher = vscode.workspace.createFileSystemWatcher("**/*");
 
-	// Trigger TreeView refresh on file creation
 	watcher.onDidCreate((uri) => {
 		console.log(`File created: ${uri.fsPath}`);
 		treeDataProvider.refresh();
 	});
 
-	// Optionally handle file deletions and changes
 	watcher.onDidDelete((uri) => {
 		console.log(`File deleted: ${uri.fsPath}`);
 		treeDataProvider.refresh();
@@ -117,17 +107,14 @@ export function activate(context: vscode.ExtensionContext) {
 		console.log(`File changed: ${uri.fsPath}`);
 		treeDataProvider.refresh();
 	});
+
 	context.subscriptions.push(watcher);
-
-
-
 }
 
 // This method is called when your extension is deactivated
 export function deactivate() { 
 
 }
-
 
 // Test Block
 interface TestBlock {
@@ -543,8 +530,7 @@ export async function parseTestFile(uri: vscode.Uri): Promise<TestBlock[]> {
 	terminal.show();
 	terminal.sendText(`npx extest setup-and-run ${outputPath}`);
   }
-  
-  
+
   async function runFolder(folder: string) {
 	const configuration = vscode.workspace.getConfiguration('extesterRunner');
 	const outputFolder = configuration.get<string>('outFolder') || 'out';
@@ -584,3 +570,4 @@ export async function parseTestFile(uri: vscode.Uri): Promise<TestBlock[]> {
 	terminal.show();
 	terminal.sendText(`npx extest setup-and-run ${outputPath}`);
   }
+  

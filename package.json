@@ -2,7 +2,7 @@
   "name": "extester-runner",
   "displayName": "extester-runner",
   "description": "to be defined",
-  "version": "0.0.14",
+  "version": "0.0.18",
   "engines": {
     "vscode": "^1.96.0"
   },
