@@ -3,7 +3,8 @@ import * as path from 'path';
 import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
 import * as t from '@babel/types';
-
+import { RunAllTestsTask } from './tasks/RunAllTask';
+import { RunFileTask } from './tasks/RunFileTask';
 
 export function activate(context: vscode.ExtensionContext) {
 
@@ -13,28 +14,27 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// run commands
 	// all files
-	context.subscriptions.push(
-		vscode.commands.registerCommand('extester-runner.runAll', async () => {
-			vscode.window.showInformationMessage('Running all tests.');
-			await runAllTests();
-		})
-	);
+	// context.subscriptions.push(
+	// 	vscode.commands.registerCommand('extester-runner.runAll', async () => {
+	// 		await runAllTests();
+	// 	})
+	// );
 
 	// specific folder
-	context.subscriptions.push(
-		vscode.commands.registerCommand('extester-runner.runFolder', async (item: TreeItem) => {
-			vscode.window.showInformationMessage(`Running test files in folder: ${item.folderPath}.`);
-			await runFolder(item.folderPath as string);
-		})
-	);
+	// context.subscriptions.push(
+	// 	vscode.commands.registerCommand('extester-runner.runFolder', async (item: TreeItem) => {
+	// 		vscode.window.showInformationMessage(`Running test files in folder: ${item.folderPath}.`);
+	// 		await runFolder(item.folderPath as string);
+	// 	})
+	// );
 
 	// specific file
-	context.subscriptions.push(
-		vscode.commands.registerCommand('extester-runner.runFile', async (item: TreeItem) => {
-			vscode.window.showInformationMessage(`Running tests in file: ${item.filePath}.`);
-			await runFile(item.filePath as string);
-		})
-	);
+	// context.subscriptions.push(
+	// 	vscode.commands.registerCommand('extester-runner.runFile', async (item: TreeItem) => {
+	// 		vscode.window.showInformationMessage(`Running tests in file: ${item.filePath}.`);
+	// 		await runFile(item.filePath as string);
+	// 	})
+	// );
 
 	// tree view commands
 	// refresh
@@ -109,6 +109,30 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	context.subscriptions.push(watcher);
+
+
+	/// playground
+
+	// Register the task provider
+    const disposable = vscode.commands.registerCommand('extester-runner.runAll', async () => {
+        const task = new RunAllTestsTask();
+        await task.execute();
+    });
+    context.subscriptions.push(disposable);
+
+	const disposable2 = vscode.commands.registerCommand('extester-runner.runFile', async (item: TreeItem) => {
+        const task = new RunFileTask(item.filePath as string);
+        await task.execute();
+    });
+    context.subscriptions.push(disposable2);
+
+	const disposable3 = vscode.commands.registerCommand('extester-runner.runFolder', async (item: TreeItem) => {
+        const task = new RunFileTask(item.folderPath as string);
+        await task.execute();
+    });
+    context.subscriptions.push(disposable3);
+
+	/// end of playground
 }
 
 // This method is called when your extension is deactivated
@@ -509,65 +533,3 @@ export async function parseTestFile(uri: vscode.Uri): Promise<TestBlock[]> {
   
 	return testStructure;
   }
-
-  async function runAllTests() {
-	const configuration = vscode.workspace.getConfiguration('extesterRunner');
-	const outputFolder = configuration.get<string>('outFolder') || 'out';
-	const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '';
-	const outputPath = `${workspaceFolder}/${outputFolder}/**/*.test.js`;
-  
-	vscode.window.showInformationMessage('Running all tests...');
-  
-	// find an existing terminal or create a new one
-	let terminal = vscode.window.terminals.find(t => t.name === 'UI Test Runner');
-	if (!terminal) {
-	  terminal = vscode.window.createTerminal({
-		name: 'UI Test Runner', // name of the terminal
-	  });
-	}
-  
-	// focus the terminal and send the command with the modified path
-	terminal.show();
-	terminal.sendText(`npx extest setup-and-run ${outputPath}`);
-  }
-
-  async function runFolder(folder: string) {
-	const configuration = vscode.workspace.getConfiguration('extesterRunner');
-	const outputFolder = configuration.get<string>('outFolder') || 'out';
-	const outputPath = folder.replace(/src\//, `${outputFolder}/`) + '/**/*.test.js';
-  
-	vscode.window.showInformationMessage(`Running ${outputFolder}`);
-  
-	let terminal = vscode.window.terminals.find(t => t.name === 'UI Test Runner');
-	if (!terminal) {
-	  terminal = vscode.window.createTerminal({
-		name: 'UI Test Runner', // name of the terminal
-	  });
-	}
-  
-	terminal.show();
-	terminal.sendText(`npx extest setup-and-run ${outputPath}`);
-  }
-  
-  async function runFile(file: string) {
-	const configuration = vscode.workspace.getConfiguration('extesterRunner');
-	const outputFolder = configuration.get<string>('outFolder') || 'out/**.*.js';
-  
-	// transform the input path to match the output folder and file structure
-	const outputPath = file
-	  .replace(/src\//, `${outputFolder}/`) // replace 'src/' with the output folder
-	  .replace(/\.ts$/, '.js'); // replace '.ts' with '.js'
-  
-	vscode.window.showInformationMessage(`Running ${outputPath}`);
-  
-	let terminal = vscode.window.terminals.find(t => t.name === 'UI Test Runner');
-	if (!terminal) {
-	  terminal = vscode.window.createTerminal({
-		name: 'UI Test Runner', // name of the terminal
-	  });
-	}
-  
-	terminal.show();
-	terminal.sendText(`npx extest setup-and-run ${outputPath}`);
-  }
-  

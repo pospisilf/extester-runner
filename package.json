@@ -12,27 +12,39 @@
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
+    "taskDefinitions": [
+      {
+        "type": "extester",
+        "required": [],
+        "properties": {
+          "label": {
+            "type": "string",
+            "description": "A label for the ExTester task"
+          }
+        }
+      }
+    ],
     "colors": [
-    {
-      "id": "extesterrunner.only",
-      "description": "The color used for the 'only' modifier.",
-      "defaults": {
-        "light": "#42A5F5",
-        "dark": "#64B5F6",
-        "highContrast": "#00BFFF"
+      {
+        "id": "extesterrunner.only",
+        "description": "The color used for the 'only' modifier.",
+        "defaults": {
+          "light": "#42A5F5",
+          "dark": "#64B5F6",
+          "highContrast": "#00BFFF"
+        }
+      },
+      {
+        "id": "extesterrunner.skip",
+        "description": "The color used for the 'skip' modifier.",
+        "defaults": {
+          "light": "#FFA726",
+          "dark": "#FFB74D",
+          "highContrast": "#FF8C00"
+        }
       }
-    },
-    {
-      "id": "extesterrunner.skip",
-      "description": "The color used for the 'skip' modifier.",
-      "defaults": {
-        "light": "#FFA726",
-        "dark": "#FFB74D",
-        "highContrast": "#FF8C00"
-      }
-    }
-  ],
-  "configuration": {
+    ],
+    "configuration": {
       "title": "ExTester Runner",
       "properties": {
         "extesterRunner.testFileGlob": {
@@ -49,6 +61,14 @@
           "type": "string",
           "default": "out",
           "description": "Out folder. Default is 'out'."
+        },
+        "extesterRunner.additionalArgs": {
+          "type": "array",
+          "description": "Additional arguments for ExTester commands",
+          "default": [],
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
