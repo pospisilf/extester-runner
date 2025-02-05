@@ -14,12 +14,12 @@
   "contributes": {
     "taskDefinitions": [
       {
-        "type": "extester",
+        "type": "extester-runner-task",
         "required": [],
         "properties": {
           "label": {
             "type": "string",
-            "description": "A label for the ExTester task"
+            "description": "ExTester runner tasks definitions."
           }
         }
       }
@@ -77,35 +77,37 @@
         "command": "extester-runner.collapseAll",
         "title": "Collapse All",
         "icon": "$(collapse-all)",
-        "tooltip": "Collapse all items in tree"
+        "tooltip": "Collapse all items in tree."
       },
       {
         "command": "extester-runner.refreshTests",
-        "title": "Extester Runner: Refresh tests",
+        "title": "Refresh Tests",
         "icon": "$(refresh)",
-        "tooltip": "Refresh list of tests"
+        "tooltip": "Refresh list of tests."
       },
       {
         "command": "extester-runner.runFile",
         "icon": "$(play)",
-        "title": "Run file"
+        "title": "Run File",
+        "tooltip": "Run specific test file."
       },
       {
         "command": "extester-runner.runAll",
-        "title": "Extester Runner: Run all tests",
+        "title": "Run All Tests",
         "icon": "$(run-all)",
-        "tooltip": "Run all tests"
+        "tooltip": "Run all tests in workspace."
       },
       {
         "command": "extester-runner.runFolder",
         "icon": "$(run-below)",
-        "title": "Run folder"
+        "title": "Run Folder",
+        "tooltip": "Run all test files inside folder."
       },
       {
         "command": "extester-runner.searchFiles",
-        "title": "Search in ExTester Tree",
+        "title": "Search In ExTester Tree",
         "icon": "$(search)",
-        "tooltip": "Search for files or folders in the tree view"
+        "tooltip": "Search for files or folders in the ExTester tree view."
       }
     ],
     "viewsContainers": {
