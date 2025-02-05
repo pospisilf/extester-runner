@@ -12,35 +12,10 @@ export function activate(context: vscode.ExtensionContext) {
 	const treeDataProvider = new ExtesterTreeProvider();
 	vscode.window.registerTreeDataProvider('extesterView', treeDataProvider);
 
-	// run commands
-	// all files
-	// context.subscriptions.push(
-	// 	vscode.commands.registerCommand('extester-runner.runAll', async () => {
-	// 		await runAllTests();
-	// 	})
-	// );
-
-	// specific folder
-	// context.subscriptions.push(
-	// 	vscode.commands.registerCommand('extester-runner.runFolder', async (item: TreeItem) => {
-	// 		vscode.window.showInformationMessage(`Running test files in folder: ${item.folderPath}.`);
-	// 		await runFolder(item.folderPath as string);
-	// 	})
-	// );
-
-	// specific file
-	// context.subscriptions.push(
-	// 	vscode.commands.registerCommand('extester-runner.runFile', async (item: TreeItem) => {
-	// 		vscode.window.showInformationMessage(`Running tests in file: ${item.filePath}.`);
-	// 		await runFile(item.filePath as string);
-	// 	})
-	// );
-
 	// tree view commands
 	// refresh
 	context.subscriptions.push(
 		vscode.commands.registerCommand('extester-runner.refreshTests', async () => {
-			vscode.window.showInformationMessage('Refreshing files.'); // maybe not neccessary?
 			treeDataProvider.refresh();
 		})
 	);
@@ -55,40 +30,40 @@ export function activate(context: vscode.ExtensionContext) {
 	// search files
 	context.subscriptions.push(
 		vscode.commands.registerCommand('extester-runner.searchFiles', async () => {
-		  const searchQuery = await vscode.window.showInputBox({
-			placeHolder: 'Search for a file or folder...',
-			prompt: 'Type to search files or folders in the tree view',
-		  });
-	
-		  treeDataProvider.setSearchQuery(searchQuery); // Pass the query to the TreeDataProvider
+			const searchQuery = await vscode.window.showInputBox({
+				placeHolder: 'Search for a file or folder...',
+				prompt: 'Type to search files or folders in the tree view',
+			});
+
+			treeDataProvider.setSearchQuery(searchQuery); // Pass the query to the TreeDataProvider
 		})
-	  );
+	);
 
 	// utils
 	// open specific file in editor on position if defined
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
-		  'extesterRunner.openTestItem',
-		  async (filePath: string, lineNumber?: number) => {
-			if (filePath) {
-			  try {
-				const document = await vscode.workspace.openTextDocument(filePath);
-				const editor = await vscode.window.showTextDocument(document);
-	
-				const position = lineNumber !== undefined
-				  ? new vscode.Position(lineNumber - 1, 0) // convert to 0-based index
-				  : new vscode.Position(0, 0);
-	
-				const range = new vscode.Range(position, position);
-				editor.revealRange(range, vscode.TextEditorRevealType.InCenter); // center the line in the editor
-				editor.selection = new vscode.Selection(position, position); // set the cursor to the line
-			  } catch (error) {
-				vscode.window.showErrorMessage(`Failed to open file: ${error}`);
-			  }
+			'extesterRunner.openTestItem',
+			async (filePath: string, lineNumber?: number) => {
+				if (filePath) {
+					try {
+						const document = await vscode.workspace.openTextDocument(filePath);
+						const editor = await vscode.window.showTextDocument(document);
+
+						const position = lineNumber !== undefined
+							? new vscode.Position(lineNumber - 1, 0) // convert to 0-based index
+							: new vscode.Position(0, 0);
+
+						const range = new vscode.Range(position, position);
+						editor.revealRange(range, vscode.TextEditorRevealType.InCenter); // center the line in the editor
+						editor.selection = new vscode.Selection(position, position); // set the cursor to the line
+					} catch (error) {
+						vscode.window.showErrorMessage(`Failed to open file: ${error}`);
+					}
+				}
 			}
-		  }
 		)
-	  );
+	);
 
 	// refresh on create, delete and change
 	const watcher = vscode.workspace.createFileSystemWatcher("**/*");
@@ -111,32 +86,34 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(watcher);
 
 
-	/// playground
+	// Run commands
+	// Run all
+	context.subscriptions.push(
+		vscode.commands.registerCommand('extester-runner.runAll', async () => {
+			const task = new RunAllTestsTask();
+			await task.execute();
+		})
+	);
 
-	// Register the task provider
-    const disposable = vscode.commands.registerCommand('extester-runner.runAll', async () => {
-        const task = new RunAllTestsTask();
-        await task.execute();
-    });
-    context.subscriptions.push(disposable);
+	// Run folder
+	context.subscriptions.push(
+		vscode.commands.registerCommand('extester-runner.runFolder', async (item: TreeItem) => {
+			const task = new RunFileTask(item.folderPath as string);
+			await task.execute();
+		})
+	);
 
-	const disposable2 = vscode.commands.registerCommand('extester-runner.runFile', async (item: TreeItem) => {
-        const task = new RunFileTask(item.filePath as string);
-        await task.execute();
-    });
-    context.subscriptions.push(disposable2);
-
-	const disposable3 = vscode.commands.registerCommand('extester-runner.runFolder', async (item: TreeItem) => {
-        const task = new RunFileTask(item.folderPath as string);
-        await task.execute();
-    });
-    context.subscriptions.push(disposable3);
-
-	/// end of playground
+	// Run file
+	context.subscriptions.push(
+		vscode.commands.registerCommand('extester-runner.runFile', async (item: TreeItem) => {
+			const task = new RunFileTask(item.filePath as string);
+			await task.execute();
+		})
+	);
 }
 
 // This method is called when your extension is deactivated
-export function deactivate() { 
+export function deactivate() {
 
 }
 
@@ -431,105 +408,105 @@ class ExtesterTreeProvider implements vscode.TreeDataProvider<TreeItem> {
 export async function parseTestFile(uri: vscode.Uri): Promise<TestBlock[]> {
 	const document = await vscode.workspace.openTextDocument(uri);
 	const content = document.getText();
-  
+
 	const ast = parse(content, {
-	  sourceType: "module",
-	  plugins: ["typescript"], // handle TypeScript-specific syntax
+		sourceType: "module",
+		plugins: ["typescript"], // handle TypeScript-specific syntax
 	});
-  
+
 	const testStructure: TestBlock[] = []; // root structure
 	const stack: TestBlock[] = []; // stack for managing nesting
-  
+
 	traverse(ast, {
-	  CallExpression(path) {
-		const callee = path.node.callee;
-		let functionName: string | undefined = undefined;
-		let modifier: string | null = null;
-  
-		// identify function name and modifier (e.g., `describe`, `it.skip`)
-		if (t.isIdentifier(callee)) {
-		  functionName = callee.name;
-		} else if (t.isMemberExpression(callee)) {
-		  const object = callee.object;
-		  const property = callee.property;
-		  if (t.isIdentifier(object) && t.isIdentifier(property)) {
-			functionName = object.name;
-			modifier = property.name; // handle `.skip`, `.only`, etc.
-		  }
-		}
-  
-		// get line of occurrence
-		const line = path.node.loc?.start.line || 0;
-  
-		// handle `describe` blocks
-		if (functionName === "describe") {
-		  const describeArg = path.node.arguments[0];
-		  const describeName = t.isStringLiteral(describeArg)
-			? describeArg.value
-			: "Unnamed Describe";
-  
-		  const newDescribeBlock: TestBlock = {
-			describe: describeName,
-			filePath: uri.fsPath, // maybe this could be handled differently?
-			line: line,
-			its: [],
-			children: [], // nested describes
-			modifier: modifier
-		  };
-  
-		  // add to parent block's children or root structure
-		  if (stack.length > 0) {
-			const parent = stack[stack.length - 1];
-			parent.children.push(newDescribeBlock);
-		  } else {
-			testStructure.push(newDescribeBlock);
-		  }
-  
-		  stack.push(newDescribeBlock); // push current block to stack
-		  return; // skip further processing in this CallExpression for now
-		}
-  
-		// handle `it` blocks
-		if (functionName === "it") {
-		  const itArg = path.node.arguments[0];
-		  const itName = t.isStringLiteral(itArg) ? itArg.value : "Unnamed It";
-  
-		  const itBlock = {
-			name: itName,
-			filePath: uri.fsPath, // maybe this could be handled differently?
-			modifier: modifier,
-			line: line,
-		  };
-  
-		  // add to the `its` array of the current `describe` block
-		  if (stack.length > 0) {
-			const currentDescribe = stack[stack.length - 1];
-			currentDescribe.its.push(itBlock);
-		  }
-		}
-	  },
-  
-	  // check exit condition for `describe` blocks
-	  exit(path) {
-		if (path.isCallExpression()) {
-		  const callee = path.node.callee;
-		  let functionName: string | undefined = undefined;
-  
-		  if (t.isIdentifier(callee)) {
-			functionName = callee.name;
-		  } else if (t.isMemberExpression(callee)) {
-			const object = callee.object;
-			if (t.isIdentifier(object)) {
-			  functionName = object.name;
+		CallExpression(path) {
+			const callee = path.node.callee;
+			let functionName: string | undefined = undefined;
+			let modifier: string | null = null;
+
+			// identify function name and modifier (e.g., `describe`, `it.skip`)
+			if (t.isIdentifier(callee)) {
+				functionName = callee.name;
+			} else if (t.isMemberExpression(callee)) {
+				const object = callee.object;
+				const property = callee.property;
+				if (t.isIdentifier(object) && t.isIdentifier(property)) {
+					functionName = object.name;
+					modifier = property.name; // handle `.skip`, `.only`, etc.
+				}
 			}
-		  }
-  
-		  if (functionName === "describe") {
-			stack.pop(); // pop the current `describe` block from the stack
-		  }
-		}
-	  },
+
+			// get line of occurrence
+			const line = path.node.loc?.start.line || 0;
+
+			// handle `describe` blocks
+			if (functionName === "describe") {
+				const describeArg = path.node.arguments[0];
+				const describeName = t.isStringLiteral(describeArg)
+					? describeArg.value
+					: "Unnamed Describe";
+
+				const newDescribeBlock: TestBlock = {
+					describe: describeName,
+					filePath: uri.fsPath, // maybe this could be handled differently?
+					line: line,
+					its: [],
+					children: [], // nested describes
+					modifier: modifier
+				};
+
+				// add to parent block's children or root structure
+				if (stack.length > 0) {
+					const parent = stack[stack.length - 1];
+					parent.children.push(newDescribeBlock);
+				} else {
+					testStructure.push(newDescribeBlock);
+				}
+
+				stack.push(newDescribeBlock); // push current block to stack
+				return; // skip further processing in this CallExpression for now
+			}
+
+			// handle `it` blocks
+			if (functionName === "it") {
+				const itArg = path.node.arguments[0];
+				const itName = t.isStringLiteral(itArg) ? itArg.value : "Unnamed It";
+
+				const itBlock = {
+					name: itName,
+					filePath: uri.fsPath, // maybe this could be handled differently?
+					modifier: modifier,
+					line: line,
+				};
+
+				// add to the `its` array of the current `describe` block
+				if (stack.length > 0) {
+					const currentDescribe = stack[stack.length - 1];
+					currentDescribe.its.push(itBlock);
+				}
+			}
+		},
+
+		// check exit condition for `describe` blocks
+		exit(path) {
+			if (path.isCallExpression()) {
+				const callee = path.node.callee;
+				let functionName: string | undefined = undefined;
+
+				if (t.isIdentifier(callee)) {
+					functionName = callee.name;
+				} else if (t.isMemberExpression(callee)) {
+					const object = callee.object;
+					if (t.isIdentifier(object)) {
+						functionName = object.name;
+					}
+				}
+
+				if (functionName === "describe") {
+					stack.pop(); // pop the current `describe` block from the stack
+				}
+			}
+		},
 	});
-  
+
 	return testStructure;
-  }
+}
